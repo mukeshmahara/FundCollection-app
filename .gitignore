@@ -1,0 +1,100 @@
+config.ru
+tmp/*
+log/*
+vendor/bundle
+coverage/
+spec/tmp
+*.swp
+*.swo
+.DS_Store
+*.env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore master key for decrypting credentials and more.
+backend/config/master.key
+
+# ------------------------------
+# Added ignores for monorepo setup (Rails backend + Next.js frontend)
+# ------------------------------
+
+# Global editor / OS noise
+.idea/
+.vscode/
+*.iml
+Thumbs.db
+
+# Root level environment files
+.env*
+!.env.example
+
+# Logs & temp (scoped to backend and root fallbacks)
+backend/log/
+backend/tmp/
+log/
+tmp/
+
+# Rails specific
+backend/storage/
+backend/public/assets
+backend/public/packs
+backend/public/packs-test
+backend/node_modules/
+backend/.byebug_history
+backend/.ruby-version
+*.rbc
+*.sassc
+*.sqlite3
+*.sqlite3-journal
+
+# Bundler / gems
+backend/vendor/bundle/
+vendor/bundle/
+
+# Docs / coverage
+backend/coverage/
+coverage/
+
+# Node / Next.js frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/.vercel/
+frontend/coverage/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# Package managers lockfiles (keep one canonical if desired)
+# Uncomment below if you decide to only keep a single ecosystem lock file
+# yarn.lock
+# package-lock.json
+# pnpm-lock.yaml
+
+# Misc build artifacts
+*.log
+*.pid
+*.pid.lock
+
+# Sensitive credentials (Rails already uses credentials.yml.enc & master.key)
+backend/config/credentials/*.key
+backend/config/credentials/*.enc
+
+# Temporary uploads (ActiveStorage variants & cache)
+backend/storage/*
+!backend/storage/.keep
+
+# Ignore local dotenv in frontend
+frontend/.env*
+!frontend/.env.example
+
+# Swagger generated (if generated locally; adjust as needed)
+backend/swagger/v1/*.json
+
+# Mac tarball artifacts
+*.tgz

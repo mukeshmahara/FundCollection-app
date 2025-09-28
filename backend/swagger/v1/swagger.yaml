@@ -1,0 +1,848 @@
+---
+openapi: 3.0.1
+info:
+  title: Fund Collection API
+  version: v1
+  description: API for managing fundraising campaigns and donations
+  contact:
+    name: API Support
+    email: support@fundcollection.com
+servers:
+- url: http://localhost:3000
+  description: Development server
+- url: https://api.fundcollection.com
+  description: Production server
+paths:
+  "/api/v1/campaigns":
+    get:
+      summary: list campaigns
+      tags:
+      - Campaigns
+      description: Retrieve all active campaigns
+      parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+        required: false
+        description: Page number
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+        required: false
+        description: Items per page
+      - name: status
+        in: query
+        schema:
+          type: string
+        required: false
+        description: Filter by status
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Campaign"
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      total_pages:
+                        type: integer
+                      total_count:
+                        type: integer
+    post:
+      summary: create campaign
+      tags:
+      - Campaigns
+      description: Create a new fundraising campaign
+      security:
+      - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                campaign:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    description:
+                      type: string
+                    goal_amount:
+                      type: number
+                      format: decimal
+                    deadline:
+                      type: string
+                      format: datetime
+                  required:
+                  - title
+                  - description
+                  - goal_amount
+                  - deadline
+      responses:
+        '201':
+          description: campaign created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Campaign"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/campaigns/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: Campaign ID
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show campaign
+      tags:
+      - Campaigns
+      description: Retrieve a specific campaign by ID
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Campaign"
+        '404':
+          description: campaign not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+    put:
+      summary: update campaign
+      tags:
+      - Campaigns
+      description: Update an existing campaign
+      security:
+      - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                campaign:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    description:
+                      type: string
+                    goal_amount:
+                      type: number
+                      format: decimal
+                    deadline:
+                      type: string
+                      format: datetime
+                    status:
+                      type: string
+                      enum:
+                      - draft
+                      - active
+                      - completed
+                      - cancelled
+      responses:
+        '200':
+          description: campaign updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Campaign"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: campaign not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+    delete:
+      summary: delete campaign
+      tags:
+      - Campaigns
+      description: Delete a campaign
+      security:
+      - Bearer: []
+      responses:
+        '204':
+          description: campaign deleted
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: campaign not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/campaigns/{id}/donate":
+    parameters:
+    - name: id
+      in: path
+      description: Campaign ID
+      required: true
+      schema:
+        type: string
+    post:
+      summary: donate to campaign
+      tags:
+      - Campaigns
+      description: Make a donation to a specific campaign
+      security:
+      - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                donation:
+                  type: object
+                  properties:
+                    amount:
+                      type: number
+                      format: decimal
+                    anonymous:
+                      type: boolean
+                  required:
+                  - amount
+      responses:
+        '201':
+          description: donation created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Donation"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: campaign not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/campaigns/{id}/donations":
+    parameters:
+    - name: id
+      in: path
+      description: Campaign ID
+      required: true
+      schema:
+        type: string
+    get:
+      summary: list campaign donations
+      tags:
+      - Campaigns
+      description: Retrieve all donations for a specific campaign
+      parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+        required: false
+        description: Page number
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+        required: false
+        description: Items per page
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Donation"
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      total_pages:
+                        type: integer
+                      total_count:
+                        type: integer
+        '404':
+          description: campaign not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/donations":
+    get:
+      summary: list donations
+      tags:
+      - Donations
+      description: Retrieve donations for the authenticated user
+      security:
+      - Bearer: []
+      parameters:
+      - name: page
+        in: query
+        schema:
+          type: integer
+        required: false
+        description: Page number
+      - name: per_page
+        in: query
+        schema:
+          type: integer
+        required: false
+        description: Items per page
+      - name: status
+        in: query
+        schema:
+          type: string
+        required: false
+        description: Filter by status
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Donation"
+                  meta:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                      total_pages:
+                        type: integer
+                      total_count:
+                        type: integer
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+    post:
+      summary: create donation
+      tags:
+      - Donations
+      description: Create a new donation
+      security:
+      - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                donation:
+                  type: object
+                  properties:
+                    campaign_id:
+                      type: integer
+                    amount:
+                      type: number
+                      format: decimal
+                    anonymous:
+                      type: boolean
+                  required:
+                  - campaign_id
+                  - amount
+      responses:
+        '201':
+          description: donation created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Donation"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/donations/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: Donation ID
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show donation
+      tags:
+      - Donations
+      description: Retrieve a specific donation by ID
+      security:
+      - Bearer: []
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Donation"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: donation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/login":
+    post:
+      summary: user login
+      tags:
+      - Authentication
+      description: Authenticate user and return JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      format: email
+                    password:
+                      type: string
+                  required:
+                  - email
+                  - password
+      responses:
+        '200':
+          description: successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                  data:
+                    "$ref": "#/components/schemas/User"
+        '401':
+          description: invalid credentials
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/signup":
+    post:
+      summary: user registration
+      tags:
+      - Authentication
+      description: Register a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      format: email
+                    password:
+                      type: string
+                    password_confirmation:
+                      type: string
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                  required:
+                  - email
+                  - password
+                  - password_confirmation
+                  - first_name
+                  - last_name
+      responses:
+        '200':
+          description: successful registration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                  data:
+                    "$ref": "#/components/schemas/User"
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/logout":
+    delete:
+      summary: user logout
+      tags:
+      - Authentication
+      description: Logout user and invalidate JWT token
+      security:
+      - Bearer: []
+      responses:
+        '200':
+          description: successful logout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                  message:
+                    type: string
+  "/api/v1/payments/create_payment_intent":
+    post:
+      summary: create payment intent
+      tags:
+      - Payments
+      description: Create a Stripe payment intent for a donation
+      security:
+      - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                donation_id:
+                  type: integer
+                return_url:
+                  type: string
+              required:
+              - donation_id
+      responses:
+        '200':
+          description: payment intent created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  client_secret:
+                    type: string
+                  payment_intent_id:
+                    type: string
+                  status:
+                    type: string
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: donation not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/payments/confirm":
+    post:
+      summary: confirm payment
+      tags:
+      - Payments
+      description: Confirm a payment and update donation status
+      security:
+      - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payment_intent_id:
+                  type: string
+              required:
+              - payment_intent_id
+      responses:
+        '200':
+          description: payment confirmed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  donation:
+                    "$ref": "#/components/schemas/Donation"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/users/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: User ID
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show user
+      tags:
+      - Users
+      description: Retrieve user profile information
+      security:
+      - Bearer: []
+      responses:
+        '200':
+          description: successful
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+    put:
+      summary: update user
+      tags:
+      - Users
+      description: Update user profile information
+      security:
+      - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    first_name:
+                      type: string
+                    last_name:
+                      type: string
+                    email:
+                      type: string
+                      format: email
+      responses:
+        '200':
+          description: user updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/User"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '404':
+          description: user not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '422':
+          description: invalid request
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        role:
+          type: string
+          enum:
+          - donor
+          - admin
+        created_at:
+          type: string
+          format: datetime
+        updated_at:
+          type: string
+          format: datetime
+    Campaign:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        goal_amount:
+          type: number
+          format: decimal
+        deadline:
+          type: string
+          format: datetime
+        status:
+          type: string
+          enum:
+          - draft
+          - active
+          - completed
+          - cancelled
+        creator_id:
+          type: integer
+        created_at:
+          type: string
+          format: datetime
+        updated_at:
+          type: string
+          format: datetime
+    Donation:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        campaign_id:
+          type: integer
+        amount:
+          type: number
+          format: decimal
+        anonymous:
+          type: boolean
+        status:
+          type: string
+          enum:
+          - pending
+          - successful
+          - failed
+          - refunded
+        created_at:
+          type: string
+          format: datetime
+        updated_at:
+          type: string
+          format: datetime
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string

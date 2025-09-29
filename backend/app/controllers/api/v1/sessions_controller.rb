@@ -1,6 +1,7 @@
 class Api::V1::SessionsController < Devise::SessionsController
   respond_to :json
-  skip_before_action :authenticate_user!, only: [ :create ]
+  # Skip auth for create (login) and destroy (logout) to avoid Devise session access in API mode.
+  skip_before_action :authenticate_user!, only: [ :create, :destroy ]
 
   def create
     # Attempt Devise authentication
@@ -33,28 +34,22 @@ class Api::V1::SessionsController < Devise::SessionsController
   end
 
   def destroy
-    current_user.refresh_tokens.delete_all
-    super
-  end
-
-  private
-
-  def respond_to_on_destroy
+    # Stateless logout: decode token (if present) and clear refresh tokens for that user.
     token = request.headers["Authorization"]&.split(" ")&.last
-    user = nil
     if token.present?
       begin
-        jwt_payload = JWT.decode(token, Rails.application.credentials.devise_jwt_secret_key || Rails.application.secret_key_base).first
-        user = User.find_by(id: jwt_payload["sub"])
+        jwt_secret = Rails.application.credentials.devise_jwt_secret_key || Rails.application.secret_key_base
+        payload = JWT.decode(token, jwt_secret).first
+        if (user_id = payload["sub"])
+          if (user = User.find_by(id: user_id)) && user.respond_to?(:refresh_tokens)
+            user.refresh_tokens.delete_all
+          end
+        end
       rescue JWT::DecodeError, ActiveRecord::RecordNotFound
-        user = nil
+        # Ignore; still return generic success (idempotent logout)
       end
     end
-
-    if user
-      render json: { status: 200, message: "Logged out successfully." }, status: :ok
-    else
-      render json: { status: 401, message: "Couldn't find an active session." }, status: :unauthorized
-    end
+    render json: { status: 200, message: "Logged out successfully." }, status: :ok
   end
+  private
 end

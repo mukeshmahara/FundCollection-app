@@ -50,8 +50,8 @@ class ApplicationController < ActionController::API
       prev_page: pagy.prev,
       total_pages: pagy.pages,
       total_count: pagy.count,
-  # pagy 6+ exposes :limit; older versions used :items accessor
-  per_page: (pagy.respond_to?(:limit) ? pagy.limit : (pagy.vars[:items] || pagy.vars[:limit]))
+      # pagy 6+ exposes :limit; older versions used :items accessor
+      per_page: (pagy.respond_to?(:limit) ? pagy.limit : (pagy.vars[:items] || pagy.vars[:limit]))
     }
   end
 end

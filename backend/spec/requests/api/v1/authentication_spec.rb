@@ -75,11 +75,23 @@ RSpec.describe 'api/v1/authentication', type: :request do
         }
       }
 
-      response(200, 'successful registration') do
+      response(201, 'successful registration') do
         schema type: :object,
                properties: {
-                 status: { type: :object },
-                 data: { '$ref' => '#/components/schemas/User' }
+                 status: {
+                   type: :object,
+                   properties: {
+                     code: { type: :integer },
+                     message: { type: :string }
+                   }
+                 },
+                 data: {
+                   type: :object,
+                   properties: {
+                     user: { '$ref' => '#/components/schemas/User' },
+                     token: { type: :string }
+                   }
+                 }
                }
 
         run_test!

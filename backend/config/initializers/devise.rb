@@ -27,8 +27,8 @@ Devise.setup do |config|
     jwt.secret = Rails.application.credentials.devise_jwt_secret_key || Rails.application.secret_key_base
     # Issue JWT on login (and optionally on signup if you want immediate auth)
     jwt.dispatch_requests = [
-      [ "POST", %r{^/api/v1/login$} ],
-      [ "POST", %r{^/api/v1/signup$} ] # comment out if you do NOT want automatic login after signup
+      [ "POST", %r{^/api/v1/login$} ]
+      # Removed signup auto-dispatch; handled manually in RegistrationsController#create
     ]
     # Revoke JWT on logout
     jwt.revocation_requests = [

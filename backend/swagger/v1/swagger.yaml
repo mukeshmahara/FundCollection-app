@@ -68,7 +68,7 @@ paths:
       description: Register a new user account
       parameters: []
       responses:
-        '200':
+        '201':
           description: successful registration
           content:
             application/json:
@@ -77,8 +77,18 @@ paths:
                 properties:
                   status:
                     type: object
+                    properties:
+                      code:
+                        type: integer
+                      message:
+                        type: string
                   data:
-                    "$ref": "#/components/schemas/User"
+                    type: object
+                    properties:
+                      user:
+                        "$ref": "#/components/schemas/User"
+                      token:
+                        type: string
         '422':
           description: invalid request
           content:

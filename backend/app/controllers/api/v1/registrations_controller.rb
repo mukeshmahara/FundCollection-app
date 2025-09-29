@@ -2,18 +2,45 @@ class Api::V1::RegistrationsController < Devise::RegistrationsController
   respond_to :json
   skip_before_action :authenticate_user!, only: [ :create ]
 
-  private
+  # Devise will call build_resource(sign_up_params) internally; we expose sign_up_params so
+  # it's explicit where the attributes come from. We return a flexible shape: either nested
+  # { user: {...} } (standard Devise) or flat JSON with the same keys.
 
-  def respond_with(current_user, _opts = {})
-    if resource.persisted?
+
+  # Custom create to prevent Devise from attempting to write to a (disabled) session.
+  # We build and save the user manually, then optionally issue a JWT token.
+  def create
+    build_resource(sign_up_params)
+
+    if resource.save
+      # Manually issue JWT (stateless) so the client can be immediately authenticated.
+      token, _payload = Warden::JWTAuth::UserEncoder.new.call(resource, resource_name, nil)
       render json: {
-        status: { code: 200, message: "Signed up successfully." },
-        data: UserSerializer.new(current_user).serializable_hash[:data][:attributes]
-      }
+        status: { code: 201, message: "Signed up successfully." },
+        data: {
+          user: UserSerializer.new(resource).serializable_hash[:data][:attributes],
+          token: token
+        }
+      }, status: :created
     else
       render json: {
-        status: { message: "User couldn't be created successfully. #{current_user.errors.full_messages.to_sentence}" }
+        status: {
+          code: 422,
+            message: "User couldn't be created successfully.",
+            errors: resource.errors.full_messages
+        }
       }, status: :unprocessable_entity
+    end
+  end
+
+  private
+
+    def sign_up_params
+    permitted = [ :email, :password, :password_confirmation, :first_name, :last_name, :role ]
+    if params[:user].is_a?(ActionController::Parameters)
+      params.require(:user).permit(*permitted)
+    else
+      params.permit(*permitted)
     end
   end
 end

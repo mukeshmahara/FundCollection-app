@@ -1,7 +1,7 @@
 require 'swagger_helper'
 
 RSpec.describe 'api/v1/authentication', type: :request do
-  path '/users/sign_in' do
+  path '/api/v1/login' do
     post('user login') do
       tags 'Authentication'
       description 'Authenticate user and return JWT token'
@@ -17,7 +17,7 @@ RSpec.describe 'api/v1/authentication', type: :request do
               email: { type: :string, format: :email },
               password: { type: :string }
             },
-            required: ['email', 'password']
+            required: [ 'email', 'password' ]
           }
         }
       }
@@ -25,8 +25,20 @@ RSpec.describe 'api/v1/authentication', type: :request do
       response(200, 'successful login') do
         schema type: :object,
                properties: {
-                 status: { type: :object },
-                 data: { '$ref' => '#/components/schemas/User' }
+                 status: {
+                   type: :object,
+                   properties: {
+                     code: { type: :integer },
+                     message: { type: :string }
+                   }
+                 },
+                 data: {
+                   type: :object,
+                   properties: {
+                     user: { '$ref' => '#/components/schemas/User' },
+                     token: { type: :string }
+                   }
+                 }
                }
 
         run_test!
@@ -39,7 +51,7 @@ RSpec.describe 'api/v1/authentication', type: :request do
     end
   end
 
-  path '/users/sign_up' do
+  path '/api/v1/signup' do
     post('user registration') do
       tags 'Authentication'
       description 'Register a new user account'
@@ -58,7 +70,7 @@ RSpec.describe 'api/v1/authentication', type: :request do
               first_name: { type: :string },
               last_name: { type: :string }
             },
-            required: ['email', 'password', 'password_confirmation', 'first_name', 'last_name']
+            required: [ 'email', 'password', 'password_confirmation', 'first_name', 'last_name' ]
           }
         }
       }
@@ -80,11 +92,11 @@ RSpec.describe 'api/v1/authentication', type: :request do
     end
   end
 
-  path '/users/sign_out' do
+  path '/api/v1/logout' do
     delete('user logout') do
       tags 'Authentication'
       description 'Logout user and invalidate JWT token'
-      security [Bearer: []]
+      security [ Bearer: [] ]
 
       response(200, 'successful logout') do
         schema type: :object,

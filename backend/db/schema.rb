@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2024_12_28_000007) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_29_083431) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -93,6 +93,16 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_28_000007) do
     t.index ["jti"], name: "index_jwt_denylists_on_jti", unique: true
   end
 
+  create_table "refresh_tokens", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "token"
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token"], name: "index_refresh_tokens_on_token"
+    t.index ["user_id"], name: "index_refresh_tokens_on_user_id"
+  end
+
   create_table "transactions", force: :cascade do |t|
     t.bigint "donation_id", null: false
     t.string "stripe_payment_intent_id", null: false
@@ -127,5 +137,6 @@ ActiveRecord::Schema[8.0].define(version: 2024_12_28_000007) do
   add_foreign_key "campaigns", "users", column: "creator_id"
   add_foreign_key "donations", "campaigns"
   add_foreign_key "donations", "users"
+  add_foreign_key "refresh_tokens", "users"
   add_foreign_key "transactions", "donations"
 end

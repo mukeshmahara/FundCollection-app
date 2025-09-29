@@ -29,7 +29,7 @@ RSpec.configure do |config|
       paths: {},
       servers: [
         {
-          url: 'http://localhost:3000',
+          url: 'http://localhost:3001',
           description: 'Development server'
         },
         {
@@ -58,7 +58,7 @@ RSpec.configure do |config|
               email: { type: :string },
               first_name: { type: :string },
               last_name: { type: :string },
-              role: { type: :string, enum: ['donor', 'admin'] },
+              role: { type: :string, enum: [ 'donor', 'admin' ] },
               created_at: { type: :string, format: :datetime },
               updated_at: { type: :string, format: :datetime }
             }
@@ -71,7 +71,7 @@ RSpec.configure do |config|
               description: { type: :string },
               goal_amount: { type: :number, format: :decimal },
               deadline: { type: :string, format: :datetime },
-              status: { type: :string, enum: ['draft', 'active', 'completed', 'cancelled'] },
+              status: { type: :string, enum: [ 'draft', 'active', 'completed', 'cancelled' ] },
               creator_id: { type: :integer },
               created_at: { type: :string, format: :datetime },
               updated_at: { type: :string, format: :datetime }
@@ -85,7 +85,7 @@ RSpec.configure do |config|
               campaign_id: { type: :integer },
               amount: { type: :number, format: :decimal },
               anonymous: { type: :boolean },
-              status: { type: :string, enum: ['pending', 'successful', 'failed', 'refunded'] },
+              status: { type: :string, enum: [ 'pending', 'successful', 'failed', 'refunded' ] },
               created_at: { type: :string, format: :datetime },
               updated_at: { type: :string, format: :datetime }
             }

@@ -1,8 +1,8 @@
 module Api
   module V1
     class CampaignsController < BaseController
-      before_action :set_campaign, only: [ :show, :donate, :donations ]
       before_action :authenticate_user!, only: [ :create, :update, :destroy, :donate ]
+      before_action :set_campaign, only: [ :show, :donate, :donations ]
 
       def index
         campaigns = Campaign.includes(:creator, image_attachment: :blob)

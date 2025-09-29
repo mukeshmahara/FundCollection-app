@@ -1,6 +1,6 @@
 class Campaign < ApplicationRecord
   # Associations
-  belongs_to :creator, class_name: 'User', foreign_key: 'creator_id'
+  belongs_to :creator, class_name: "User", foreign_key: "creator_id"
   has_many :donations, dependent: :destroy
   has_many :donors, through: :donations, source: :user
   has_one_attached :image
@@ -19,9 +19,9 @@ class Campaign < ApplicationRecord
 
   # Scopes
   scope :active, -> { where(status: :active) }
-  scope :trending, -> { joins(:donations).group('campaigns.id').order('SUM(donations.amount) DESC') }
+  scope :trending, -> { joins(:donations).group("campaigns.id").order("SUM(donations.amount) DESC") }
   scope :recent, -> { order(created_at: :desc) }
-  scope :ending_soon, -> { where('deadline > ? AND deadline <= ?', Time.current, 7.days.from_now) }
+  scope :ending_soon, -> { where("deadline > ? AND deadline <= ?", Time.current, 7.days.from_now) }
 
   # Instance methods
   def total_raised

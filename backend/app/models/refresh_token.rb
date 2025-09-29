@@ -1,6 +1,6 @@
 class RefreshToken < ApplicationRecord
   belongs_to :user
-   before_create :set_token_and_expiry
+  before_create :set_token_and_expiry
 
   def set_token_and_expiry
     self.token = SecureRandom.hex(32)

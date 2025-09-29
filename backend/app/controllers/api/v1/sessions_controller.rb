@@ -21,11 +21,14 @@ class Api::V1::SessionsController < Devise::SessionsController
     if user
       # Directly issue JWT without establishing a Warden session
       token, _payload = Warden::JWTAuth::UserEncoder.new.call(user, resource_name, nil)
+    refresh = user.refresh_tokens.create!
       render json: {
         status: { code: 200, message: "Logged in successfully." },
         data: {
-          user: UserSerializer.new(user).serializable_hash[:data][:attributes],
-          token: token
+        user: UserSerializer.new(user).serializable_hash[:data][:attributes],
+        token: token,
+        refresh_token: refresh.token,
+        refresh_expires_at: refresh.expires_at
         }
       }, status: :ok
     else

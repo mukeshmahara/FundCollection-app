@@ -10,8 +10,9 @@ class User < ApplicationRecord
   # Associations
   has_many :donations, dependent: :destroy
   has_many :campaigns, through: :donations
-  has_many :created_campaigns, class_name: 'Campaign', foreign_key: 'creator_id', dependent: :destroy
+  has_many :created_campaigns, class_name: "Campaign", foreign_key: "creator_id", dependent: :destroy
   has_one_attached :avatar
+  has_many :refresh_tokens, dependent: :delete_all
 
   # Validations
   validates :first_name, :last_name, presence: true
@@ -32,10 +33,10 @@ class User < ApplicationRecord
   end
 
   def admin?
-    role == 'admin'
+    role == "admin"
   end
 
   def donor?
-    role == 'donor'
+    role == "donor"
   end
 end

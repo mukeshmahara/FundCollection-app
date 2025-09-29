@@ -37,6 +37,11 @@ paths:
                         "$ref": "#/components/schemas/User"
                       token:
                         type: string
+                      refresh_token:
+                        type: string
+                      refresh_expires_at:
+                        type: string
+                        format: date_time
         '401':
           description: invalid credentials
           content:
@@ -89,6 +94,11 @@ paths:
                         "$ref": "#/components/schemas/User"
                       token:
                         type: string
+                      refresh_token:
+                        type: string
+                      refresh_expires_at:
+                        type: string
+                        format: date_time
         '422':
           description: invalid request
           content:

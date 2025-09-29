@@ -36,7 +36,9 @@ RSpec.describe 'api/v1/authentication', type: :request do
                    type: :object,
                    properties: {
                      user: { '$ref' => '#/components/schemas/User' },
-                     token: { type: :string }
+                     token: { type: :string },
+                     refresh_token: { type: :string },
+                     refresh_expires_at: { type: :string, format: :date_time }
                    }
                  }
                }
@@ -89,7 +91,9 @@ RSpec.describe 'api/v1/authentication', type: :request do
                    type: :object,
                    properties: {
                      user: { '$ref' => '#/components/schemas/User' },
-                     token: { type: :string }
+                     token: { type: :string },
+                     refresh_token: { type: :string },
+                     refresh_expires_at: { type: :string, format: :date_time }
                    }
                  }
                }

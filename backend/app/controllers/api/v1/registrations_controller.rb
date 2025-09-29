@@ -2,13 +2,6 @@ class Api::V1::RegistrationsController < Devise::RegistrationsController
   respond_to :json
   skip_before_action :authenticate_user!, only: [ :create ]
 
-  # Devise will call build_resource(sign_up_params) internally; we expose sign_up_params so
-  # it's explicit where the attributes come from. We return a flexible shape: either nested
-  # { user: {...} } (standard Devise) or flat JSON with the same keys.
-
-
-  # Custom create to prevent Devise from attempting to write to a (disabled) session.
-  # We build and save the user manually, then optionally issue a JWT token.
   def create
     build_resource(sign_up_params)
 

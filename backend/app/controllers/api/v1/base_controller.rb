@@ -1,7 +1,33 @@
 module Api
   module V1
     class BaseController < ApplicationController
+      before_action :authenticate_with_token!
       private
+
+      # Authenticates user from Bearer token in Authorization header
+      def authenticate_with_token!
+        header = request.headers["Authorization"]
+        if header.present? && header.start_with?("Bearer ")
+          token = header.split(" ").last
+          begin
+            payload = Warden::JWTAuth::TokenDecoder.new.call(token)
+            user = User.find_by(id: payload["sub"])
+            if user
+              @current_user = user
+            else
+              render_error("Invalid token: user not found", :unauthorized) and return
+            end
+          rescue JWT::DecodeError, ActiveRecord::RecordNotFound
+            render_error("Invalid or expired token", :unauthorized) and return
+          end
+        else
+          render_error("Missing Authorization header", :unauthorized) and return
+        end
+      end
+
+      def current_user
+        @current_user
+      end
 
       def render_success(data, message = nil, status = :ok)
         response = { success: true, data: data }

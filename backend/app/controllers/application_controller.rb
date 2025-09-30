@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::API
   include Pagy::Backend
-  before_action :authenticate_user!, unless: :devise_controller?
+  # before_action :authenticate_user!, unless: :devise_controller?
   before_action :configure_permitted_parameters, if: :devise_controller?
 
   rescue_from ActiveRecord::RecordNotFound, with: :not_found_response

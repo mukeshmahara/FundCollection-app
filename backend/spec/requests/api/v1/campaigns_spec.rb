@@ -6,7 +6,7 @@ RSpec.describe 'api/v1/campaigns', type: :request do
       tags 'Campaigns'
       description 'Retrieve all active campaigns'
       produces 'application/json'
-      
+
       parameter name: :page, in: :query, type: :integer, required: false, description: 'Page number'
       parameter name: :per_page, in: :query, type: :integer, required: false, description: 'Items per page'
       parameter name: :status, in: :query, type: :string, required: false, description: 'Filter by status'
@@ -37,7 +37,7 @@ RSpec.describe 'api/v1/campaigns', type: :request do
       description 'Create a new fundraising campaign'
       consumes 'application/json'
       produces 'application/json'
-      security [Bearer: []]
+      security [ Bearer: [] ]
 
       parameter name: :campaign, in: :body, schema: {
         type: :object,
@@ -50,7 +50,7 @@ RSpec.describe 'api/v1/campaigns', type: :request do
               goal_amount: { type: :number, format: :decimal },
               deadline: { type: :string, format: :datetime }
             },
-            required: ['title', 'description', 'goal_amount', 'deadline']
+            required: [ 'title', 'description', 'goal_amount', 'deadline' ]
           }
         }
       }
@@ -59,6 +59,12 @@ RSpec.describe 'api/v1/campaigns', type: :request do
         schema '$ref' => '#/components/schemas/Campaign'
         run_test!
       end
+
+        response(401, 'unauthorized') do
+          schema '$ref' => '#/components/schemas/Error'
+          # Example: do not send Authorization header, expect 401
+          run_test!
+        end
 
       response(401, 'unauthorized') do
         schema '$ref' => '#/components/schemas/Error'
@@ -96,7 +102,7 @@ RSpec.describe 'api/v1/campaigns', type: :request do
       description 'Update an existing campaign'
       consumes 'application/json'
       produces 'application/json'
-      security [Bearer: []]
+      security [ Bearer: [] ]
 
       parameter name: :campaign, in: :body, schema: {
         type: :object,
@@ -108,7 +114,7 @@ RSpec.describe 'api/v1/campaigns', type: :request do
               description: { type: :string },
               goal_amount: { type: :number, format: :decimal },
               deadline: { type: :string, format: :datetime },
-              status: { type: :string, enum: ['draft', 'active', 'completed', 'cancelled'] }
+              status: { type: :string, enum: [ 'draft', 'active', 'completed', 'cancelled' ] }
             }
           }
         }
@@ -138,7 +144,7 @@ RSpec.describe 'api/v1/campaigns', type: :request do
     delete('delete campaign') do
       tags 'Campaigns'
       description 'Delete a campaign'
-      security [Bearer: []]
+      security [ Bearer: [] ]
 
       response(204, 'campaign deleted') do
         run_test!
@@ -164,7 +170,7 @@ RSpec.describe 'api/v1/campaigns', type: :request do
       description 'Make a donation to a specific campaign'
       consumes 'application/json'
       produces 'application/json'
-      security [Bearer: []]
+      security [ Bearer: [] ]
 
       parameter name: :donation, in: :body, schema: {
         type: :object,
@@ -175,7 +181,7 @@ RSpec.describe 'api/v1/campaigns', type: :request do
               amount: { type: :number, format: :decimal },
               anonymous: { type: :boolean }
             },
-            required: ['amount']
+            required: [ 'amount' ]
           }
         }
       }

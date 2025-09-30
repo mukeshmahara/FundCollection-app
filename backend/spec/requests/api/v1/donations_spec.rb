@@ -6,8 +6,8 @@ RSpec.describe 'api/v1/donations', type: :request do
       tags 'Donations'
       description 'Retrieve donations for the authenticated user'
       produces 'application/json'
-      security [Bearer: []]
-      
+      security [ Bearer: [] ]
+
       parameter name: :page, in: :query, type: :integer, required: false, description: 'Page number'
       parameter name: :per_page, in: :query, type: :integer, required: false, description: 'Items per page'
       parameter name: :status, in: :query, type: :string, required: false, description: 'Filter by status'
@@ -43,7 +43,7 @@ RSpec.describe 'api/v1/donations', type: :request do
       description 'Create a new donation'
       consumes 'application/json'
       produces 'application/json'
-      security [Bearer: []]
+      security [ Bearer: [] ]
 
       parameter name: :donation, in: :body, schema: {
         type: :object,
@@ -55,7 +55,7 @@ RSpec.describe 'api/v1/donations', type: :request do
               amount: { type: :number, format: :decimal },
               anonymous: { type: :boolean }
             },
-            required: ['campaign_id', 'amount']
+            required: [ 'campaign_id', 'amount' ]
           }
         }
       }
@@ -64,6 +64,12 @@ RSpec.describe 'api/v1/donations', type: :request do
         schema '$ref' => '#/components/schemas/Donation'
         run_test!
       end
+
+        response(401, 'unauthorized') do
+          schema '$ref' => '#/components/schemas/Error'
+          # Example: do not send Authorization header, expect 401
+          run_test!
+        end
 
       response(401, 'unauthorized') do
         schema '$ref' => '#/components/schemas/Error'
@@ -84,7 +90,7 @@ RSpec.describe 'api/v1/donations', type: :request do
       tags 'Donations'
       description 'Retrieve a specific donation by ID'
       produces 'application/json'
-      security [Bearer: []]
+      security [ Bearer: [] ]
 
       response(200, 'successful') do
         schema '$ref' => '#/components/schemas/Donation'

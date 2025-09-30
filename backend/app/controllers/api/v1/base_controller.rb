@@ -2,6 +2,7 @@ module Api
   module V1
     class BaseController < ApplicationController
       before_action :authenticate_with_token!
+
       private
 
       # Authenticates user from Bearer token in Authorization header

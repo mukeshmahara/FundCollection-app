@@ -1,7 +1,6 @@
 class Api::V1::SessionsController < Devise::SessionsController
   respond_to :json
-  # Skip auth for create (login) and destroy (logout) to avoid Devise session access in API mode.
-  skip_before_action :authenticate_user!, only: [ :create, :destroy ]
+  # No authenticate_user! needed; login/logout are public/stateless endpoints.
 
   def create
     # Attempt Devise authentication
@@ -54,5 +53,4 @@ class Api::V1::SessionsController < Devise::SessionsController
     end
     render json: { status: 200, message: "Logged out successfully." }, status: :ok
   end
-  private
 end

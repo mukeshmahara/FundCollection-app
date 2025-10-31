@@ -1,6 +1,100 @@
+
+
 require 'swagger_helper'
 
 RSpec.describe 'api/v1/authentication', type: :request do
+  path '/api/v1/login_with_phone' do
+    post('login with phone number') do
+      tags 'Authentication'
+      description 'Initiate login with phone number, sends OTP via SMS (no password required)'
+      consumes 'application/json'
+      produces 'application/json'
+
+      parameter name: :user, in: :body, schema: {
+        type: :object,
+        properties: {
+          user: {
+            type: :object,
+            properties: {
+              phone_number: { type: :string }
+            },
+            required: [ 'phone_number' ]
+          }
+        }
+      }
+
+      response(200, 'OTP sent') do
+        schema type: :object,
+               properties: {
+                 status: {
+                   type: :object,
+                   properties: {
+                     code: { type: :integer },
+                     message: { type: :string }
+                   }
+                 }
+               }
+        run_test!
+      end
+
+      response(401, 'invalid phone number') do
+        schema '$ref' => '#/components/schemas/Error'
+        run_test!
+      end
+    end
+  end
+
+  path '/api/v1/verify_otp' do
+    post('verify OTP for phone login') do
+      tags 'Authentication'
+      description 'Verify OTP sent to phone and log in user'
+      consumes 'application/json'
+      produces 'application/json'
+
+      parameter name: :user, in: :body, schema: {
+        type: :object,
+        properties: {
+          user: {
+            type: :object,
+            properties: {
+              phone_number: { type: :string },
+              otp_code: { type: :string }
+            },
+            required: [ 'phone_number', 'otp_code' ]
+          }
+        }
+      }
+
+      response(200, 'OTP verified, login successful') do
+        schema type: :object,
+               properties: {
+                 status: {
+                   type: :object,
+                   properties: {
+                     code: { type: :integer },
+                     message: { type: :string }
+                   }
+                 },
+                 data: {
+                   type: :object,
+                   properties: {
+                     user: { '$ref' => '#/components/schemas/User' },
+                     token: { type: :string },
+                     refresh_token: { type: :string },
+                     refresh_expires_at: { type: :string, format: :date_time }
+                   }
+                 }
+               }
+        run_test!
+      end
+
+      response(401, 'invalid or expired OTP') do
+        schema '$ref' => '#/components/schemas/Error'
+        run_test!
+      end
+    end
+  end
+
   path '/api/v1/login' do
     post('user login') do
       tags 'Authentication'

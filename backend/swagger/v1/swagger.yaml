@@ -8,6 +8,104 @@ info:
     name: API Support
     email: support@fundcollection.com
 paths:
+  "/api/v1/login_with_phone":
+    post:
+      summary: login with phone number
+      tags:
+      - Authentication
+      description: Initiate login with phone number, sends OTP via SMS (no password
+        required)
+      parameters: []
+      responses:
+        '200':
+          description: OTP sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                      message:
+                        type: string
+        '401':
+          description: invalid phone number
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    phone_number:
+                      type: string
+                  required:
+                  - phone_number
+  "/api/v1/verify_otp":
+    post:
+      summary: verify OTP for phone login
+      tags:
+      - Authentication
+      description: Verify OTP sent to phone and log in user
+      parameters: []
+      responses:
+        '200':
+          description: OTP verified, login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                      message:
+                        type: string
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        "$ref": "#/components/schemas/User"
+                      token:
+                        type: string
+                      refresh_token:
+                        type: string
+                      refresh_expires_at:
+                        type: string
+                        format: date_time
+        '401':
+          description: invalid or expired OTP
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    phone_number:
+                      type: string
+                    otp_code:
+                      type: string
+                  required:
+                  - phone_number
+                  - otp_code
   "/api/v1/login":
     post:
       summary: user login

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_09_30_000100) do
+ActiveRecord::Schema[8.0].define(version: 2025_09_30_000200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,6 +91,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_09_30_000100) do
     t.datetime "updated_at", null: false
     t.index ["exp"], name: "index_jwt_denylists_on_exp"
     t.index ["jti"], name: "index_jwt_denylists_on_jti", unique: true
+  end
+
+  create_table "otps", force: :cascade do |t|
+    t.string "phone_number", null: false
+    t.string "code", null: false
+    t.datetime "expires_at", null: false
+    t.boolean "used", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_otps_on_code"
+    t.index ["phone_number"], name: "index_otps_on_phone_number"
   end
 
   create_table "refresh_tokens", force: :cascade do |t|

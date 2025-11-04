@@ -10,7 +10,8 @@ export interface AuthState {
     last_name?: string
     role?: string
   } | null
-  setAuth: (data: { token: string; user: AuthState['user'] }) => void
+  // remember === true -> persist in localStorage, false -> persist in sessionStorage
+  setAuth: (data: { token: string; user: AuthState['user']; remember?: boolean }) => void
   clearAuth: () => void
 }
 
@@ -19,8 +20,32 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
-      setAuth: ({ token, user }) => set({ token, user }),
-      clearAuth: () => set({ token: null, user: null })
+      setAuth: ({ token, user, remember = true }) => {
+        // Save to zustand state (persist middleware will store to localStorage by default)
+        set({ token, user })
+
+        const payload = JSON.stringify({ token, user })
+        try {
+          if (remember) {
+            // store in localStorage and remove any session entry
+            localStorage.setItem('auth-store', payload)
+            sessionStorage.removeItem('auth-temp')
+          } else {
+            // store in sessionStorage and remove any local persistent entry
+            sessionStorage.setItem('auth-temp', payload)
+            localStorage.removeItem('auth-store')
+          }
+        } catch (e) {
+          // ignore storage errors
+        }
+      },
+      clearAuth: () => {
+        set({ token: null, user: null })
+        try {
+          localStorage.removeItem('auth-store')
+          sessionStorage.removeItem('auth-temp')
+        } catch (e) {}
+      }
     }),
     {
       name: 'auth-store'

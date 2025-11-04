@@ -1,12 +1,13 @@
 
-class Api::V1::SessionsController < Devise::SessionsController
+class Api::V1::SessionsController < ApplicationController
   respond_to :json
   # No authenticate_user! needed; login/logout are public/stateless endpoints.
 
+
   def create
     # Attempt Devise authentication
-    self.resource = warden.authenticate(auth_options)
-    user = self.resource
+    # Authenticate using Warden directly for the :user scope
+    user = warden.authenticate(scope: :user)
 
     unless user
       # Manual fallback (ensures we return consistent JSON instead of Devise HTML-ish message)
@@ -19,8 +20,8 @@ class Api::V1::SessionsController < Devise::SessionsController
     end
 
     if user
-      # Directly issue JWT without establishing a Warden session
-      token, _payload = Warden::JWTAuth::UserEncoder.new.call(user, resource_name, nil)
+  # Directly issue JWT without establishing a Warden session
+  token, _payload = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil)
       refresh = user.refresh_tokens.create!
       render json: {
         status: { code: 200, message: "Logged in successfully." },
@@ -37,7 +38,6 @@ class Api::V1::SessionsController < Devise::SessionsController
   end
 
   def login_with_phone
-    @request.env["devise.mapping"] = Devise.mappings[:user]
     phone = params.dig(:user, :phone_number)
     user = User.find_by(phone_number: phone)
 
@@ -61,15 +61,14 @@ class Api::V1::SessionsController < Devise::SessionsController
   end
 
   def verify_otp
-    @request.env["devise.mapping"] = Devise.mappings[:user]
     phone = params.dig(:user, :phone_number)
     code = params.dig(:user, :otp_code)
     otp = Otp.where(phone_number: phone, code: code).where("expires_at > ?", Time.current).first
     if otp
       user = User.find_by(phone_number: phone)
       if user
-        # Issue JWT
-        token, _payload = Warden::JWTAuth::UserEncoder.new.call(user, resource_name, nil)
+  # Issue JWT
+  token, _payload = Warden::JWTAuth::UserEncoder.new.call(user, :user, nil)
         refresh = user.refresh_tokens.create!
         render json: {
           status: { code: 200, message: "Logged in successfully." },

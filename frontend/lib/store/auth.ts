@@ -29,10 +29,10 @@ export const useAuthStore = create<AuthState>()(
           if (remember) {
             // store in localStorage and remove any session entry
             localStorage.setItem('auth-store', payload)
-            sessionStorage.removeItem('auth-temp')
+            sessionStorage.removeItem('auth-store')
           } else {
             // store in sessionStorage and remove any local persistent entry
-            sessionStorage.setItem('auth-temp', payload)
+            sessionStorage.setItem('auth-store', payload)
             localStorage.removeItem('auth-store')
           }
         } catch (e) {
@@ -48,7 +48,39 @@ export const useAuthStore = create<AuthState>()(
       }
     }),
     {
-      name: 'auth-store'
+      name: 'auth-store',
+      // custom storage that reads sessionStorage first (for non-remembered sessions)
+      getStorage: () => {
+        const storage = {
+          getItem: (name: string) => {
+            try {
+              const sess = sessionStorage.getItem('auth-store')
+              if (sess) return sess
+              return localStorage.getItem('auth-store')
+            } catch (e) {
+              return null
+            }
+          },
+          setItem: (name: string, value: string) => {
+            try {
+              // If a session value exists, prefer writing to sessionStorage so session-only logins survive refresh.
+              const sessExists = !!sessionStorage.getItem('auth-store')
+              if (sessExists) {
+                sessionStorage.setItem('auth-store', value)
+              } else {
+                localStorage.setItem('auth-store', value)
+              }
+            } catch (e) {}
+          },
+          removeItem: (name: string) => {
+            try {
+              localStorage.removeItem('auth-store')
+              sessionStorage.removeItem('auth-store')
+            } catch (e) {}
+          }
+        }
+        return storage as unknown as Storage
+      }
     }
   )
 )

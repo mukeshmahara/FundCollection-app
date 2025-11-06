@@ -2,15 +2,19 @@
 import Link from 'next/link'
 import { useAuthStore } from '@/lib/store/auth'
 import { Button } from '@/components/ui/button'
+import { useEffect, useState } from 'react'
 
 export function Navbar() {
   const { user, clearAuth } = useAuthStore()
+  // Avoid hydration mismatch: render server-visible markup first, then switch on mount
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
   return (
     <nav className="border-b bg-white/70 backdrop-blur-sm sticky top-0 z-40">
       <div className="max-w-6xl mx-auto flex items-center justify-between h-14 px-4">
         <Link href="/" className="font-semibold text-primary-700">FundCollection</Link>
         <div className="flex items-center gap-4">
-          {user ? (
+          {mounted && user ? (
             <>
               <span className="text-sm text-gray-600">Hi, {user.first_name || user.email}</span>
               <Button variant="outline" size="sm" onClick={clearAuth}>Logout</Button>

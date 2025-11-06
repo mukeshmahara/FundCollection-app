@@ -28,8 +28,9 @@ export function LoginForm() {
       const data = await authApi.login(email, password)
       const token = data?.data?.token
       const user = data?.data?.user
+      const refreshToken = data?.data?.refresh_token || data?.data?.refreshToken || null
       if (token && user) {
-        setAuth({ token, user, remember })
+        setAuth({ token, refreshToken, user, remember })
         // navigate back to home or to a saved redirect
         router.push('/')
       } else {
@@ -132,8 +133,9 @@ export function LoginForm() {
                     const data = await authApi.verifyOtp(phone, otpCode)
                     const token = data?.data?.token
                     const user = data?.data?.user
+                    const refreshToken = data?.data?.refresh_token || data?.data?.refreshToken || null
                     if (token && user) {
-                      setAuth({ token, user, remember })
+                      setAuth({ token, refreshToken, user, remember })
                       router.push('/')
                     } else {
                       setError('Invalid server response')

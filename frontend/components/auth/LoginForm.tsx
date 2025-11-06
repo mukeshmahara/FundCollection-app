@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/store/auth'
 import { Button } from '@/components/ui/button'
+import * as authApi from '@/lib/api/auth'
 
 export function LoginForm() {
   const router = useRouter()
@@ -24,20 +25,7 @@ export function LoginForm() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/v1/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: { email, password } })
-      })
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => null)
-        setError(body?.status?.message || 'Login failed')
-        setLoading(false)
-        return
-      }
-
-      const data = await res.json()
+      const data = await authApi.login(email, password)
       const token = data?.data?.token
       const user = data?.data?.user
       if (token && user) {
@@ -98,17 +86,7 @@ export function LoginForm() {
                   setError(null)
                   setLoading(true)
                   try {
-                    const res = await fetch('/api/v1/login_with_phone', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ user: { phone_number: phone } })
-                    })
-                    if (!res.ok) {
-                      const body = await res.json().catch(() => null)
-                      setError(body?.status?.message || 'Failed to send OTP')
-                      setLoading(false)
-                      return
-                    }
+                    await authApi.sendLoginOtp(phone)
                     setOtpSent(true)
                   } catch (err: any) {
                     setError(err?.message || 'Network error')
@@ -151,18 +129,7 @@ export function LoginForm() {
                   setError(null)
                   setLoading(true)
                   try {
-                    const res = await fetch('/api/v1/verify_otp', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ user: { phone_number: phone, otp_code: otpCode } })
-                    })
-                    if (!res.ok) {
-                      const body = await res.json().catch(() => null)
-                      setError(body?.status?.message || 'Failed to verify OTP')
-                      setLoading(false)
-                      return
-                    }
-                    const data = await res.json()
+                    const data = await authApi.verifyOtp(phone, otpCode)
                     const token = data?.data?.token
                     const user = data?.data?.user
                     if (token && user) {

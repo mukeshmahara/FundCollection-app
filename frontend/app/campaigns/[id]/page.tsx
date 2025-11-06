@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/store/auth'
 import { Button } from '@/components/ui/button'
+import * as campaignApi from '@/lib/api/campaign'
 
 export default function CampaignShowPage() {
   const params = useParams() as { id?: string }
@@ -34,14 +35,7 @@ export default function CampaignShowPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/v1/campaigns/${id}`)
-      if (!res.ok) {
-        const body = await res.json().catch(() => null)
-        setError(body?.status?.message || 'Failed to load campaign')
-        return
-      }
-      const data = await res.json()
-      // API returns data wrapped or raw depending on backend serializers
+      const data = await campaignApi.getCampaign(id!)
       const c = data?.data || data
       setCampaign(c)
     } catch (err: any) {
@@ -58,20 +52,7 @@ export default function CampaignShowPage() {
     setError(null)
     setSuccessMessage(null)
     try {
-      const res = await fetch(`/api/v1/campaigns/${id}/donate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ donation: { amount: parseFloat(amount), anonymous } })
-      })
-      if (!res.ok) {
-        const body = await res.json().catch(() => null)
-        setError(body?.status?.message || 'Failed to donate')
-        return
-      }
-      const data = await res.json()
+  await campaignApi.donate(id, { amount: parseFloat(amount), anonymous })
       setSuccessMessage('Donation successful — thank you!')
       setAmount('')
       setAnonymous(false)

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/store/auth'
 import { Button } from '@/components/ui/button'
+import * as userApi from '@/lib/api/user'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -26,10 +27,7 @@ export default function ProfilePage() {
     setError(null)
     try {
       // Best-effort: call backend logout to revoke refresh token
-      await fetch('/api/v1/logout', {
-        method: 'DELETE',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined
-      }).catch(() => null)
+      await userApi.logout().catch(() => null)
     } finally {
       clearAuth()
       setLoading(false)
@@ -42,15 +40,7 @@ export default function ProfilePage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/v1/users/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (!res.ok) {
-        const body = await res.json().catch(() => null)
-        setError(body?.status?.message || 'Failed to fetch profile')
-        return
-      }
-      const data = await res.json()
+      const data = await userApi.getUser(user.id)
       const freshUser = data?.data || data
       // preserve token and persist (default remember=true)
       setAuth({ token: token, user: freshUser, remember: true })

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import * as authApi from '@/lib/api/auth'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -12,17 +13,8 @@ export default function ForgotPasswordPage() {
     setStatus(null)
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/passwords', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: { email } })
-      })
-      if (res.ok) {
-        setStatus('If your email is registered, you will receive reset instructions.')
-      } else {
-        const body = await res.json().catch(() => null)
-        setStatus(body?.status?.message || 'Request failed')
-      }
+      await authApi.forgotPassword(email)
+      setStatus('If your email is registered, you will receive reset instructions.')
     } catch (e: any) {
       setStatus(e?.message || 'Network error')
     } finally { setLoading(false) }

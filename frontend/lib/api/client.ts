@@ -1,5 +1,5 @@
 import axios from 'axios'
-import Cookies from 'js-cookie'
+import { useAuthStore } from '@/lib/store/auth'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
@@ -7,33 +7,46 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   },
-  withCredentials: true,
+  withCredentials: true
 })
 
-// Request interceptor to add auth token
+// Add Authorization header from zustand store (works outside React using getState)
 api.interceptors.request.use(
   (config) => {
-    const token = Cookies.get('auth_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+    try {
+      const token = useAuthStore.getState().token
+      if (token) {
+        // axios types are strict; use a small local object when needed
+        if (!config.headers) {
+          config.headers = { Authorization: `Bearer ${token}` } as any
+        } else {
+          ;(config.headers as any).Authorization = `Bearer ${token}`
+        }
+      }
+    } catch (e) {
+      // ignore
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
-// Response interceptor to handle errors
+// Response interceptor: on 401 clear local auth and optionally redirect to login
 api.interceptors.response.use(
-  (response) => response,
+  (resp) => resp,
   (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      Cookies.remove('auth_token')
-      window.location.href = '/auth/login'
+    const status = error?.response?.status
+    if (status === 401) {
+      try {
+        const clearAuth = useAuthStore.getState().clearAuth
+        clearAuth && clearAuth()
+        // avoid throwing during SSR
+        if (typeof window !== 'undefined') window.location.href = '/login'
+      } catch (e) {
+        // ignore
+      }
     }
     return Promise.reject(error)
   }

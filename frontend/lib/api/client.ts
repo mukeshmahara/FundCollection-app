@@ -16,15 +16,29 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     try {
-      const token = useAuthStore.getState().token
-      if (token) {
-        // axios types are strict; use a small local object when needed
-        if (!config.headers) {
-          config.headers = { Authorization: `Bearer ${token}` } as any
-        } else {
-          ;(config.headers as any).Authorization = `Bearer ${token}`
+        let token = useAuthStore.getState().token
+        // If the store hasn't rehydrated yet, fall back to reading storage directly
+        if (!token && typeof window !== 'undefined') {
+          try {
+            const sess = sessionStorage.getItem('auth-store')
+            const local = localStorage.getItem('auth-store')
+            const raw = sess || local
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              token = parsed?.token
+            }
+          } catch (e) {
+            // ignore parse errors
+          }
         }
-      }
+        if (token) {
+          // axios types are strict; use a small local object when needed
+          if (!config.headers) {
+            config.headers = { Authorization: `Bearer ${token}` } as any
+          } else {
+            ;(config.headers as any).Authorization = `Bearer ${token}`
+          }
+        }
     } catch (e) {
       // ignore
     }

@@ -43,7 +43,7 @@ export const useAuthStore = create<AuthState>()(
         set({ token: null, user: null })
         try {
           localStorage.removeItem('auth-store')
-          sessionStorage.removeItem('auth-temp')
+          sessionStorage.removeItem('auth-store')
         } catch (e) {}
       }
     }),
